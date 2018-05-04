@@ -1,0 +1,116 @@
+= ElasticSearch Terraform Example
+:author: Dwight Frye
+:email: dfrye@cloudbees.com
+:revnumber: 1.0
+:revdate: 2018-03-12
+
+This is a brief discussion of the provided ElasticSearch Terraform
+example. This is not intended to be a production-ready deployment, but only is
+to serve as a starting point. Virtually all ElasticSearch configuration is set
+to the as-delivered defaults with no attempt at tuning or optimization. This is
+due to the fact that, in general, we can't know in advance what tuning might be
+most appropriate for a given user's situation. Therefore, it is your responsibility
+to understand how to best tune and deploy ElasticSearch for your own purposes and
+make the requisite adjustments for your environment.
+
+The HTML version of this file is generated with *Asciidoctor* version 1.5.6.1.
+See http://asciidoctor.org for details, including installation instructions.
+Executing the command *asciidoctor README.ad* in the directory where *README.ad*
+is found will regenerate the formatted HTML. Executing the command *asciidoctor
+-r asciidoctor-pdf  --backend pdf README.ad* will regenerate the PDF.
+
+
+== Included Files
+
+The first thing to address are the included files, and their purpose in this
+example deployment. These files are listed below. This set of files has been
+tested with Terraform 0.11.2 and correct behavior with any other version is not
+assured.
+
+[horizontal]
+*README.ad*:: This file, a brief discussion of the ElasticSearch Terraform example.
+*README.html*:: This file, translated to formatted HTML output.
+*infrastructure.tf*:: The Terraform deployment script, itself.
+*variables.tf*:: The list of variables used in the *infrastructure.tf* file.
+*terraform.tfvars*:: The values to be assigned to the variables defined above. These
+*_must_* be configured by the user to match the target environment. This file can
+not be used as-is because there are intentionally placeholders where values should
+be defined.
+*gateway_user_data.tpl*:: The "user data" file passed in to the launched VMs which
+are to act as "gateway" nodes (detailed below).
+*server_user_data.tpl*:: The "user data" file passed in to the launched VMs which
+are to act as "data" nodes (detailed below).
+
+== Virtual Machine Deployment
+
+All nodes are launched from a stock Ubuntu 16.04 AMI, and the user data files assume
+that environment. Please do not move to a different base VM without understanding
+exactly what the scripting in the user data file is doing, and adjusting the scripts
+to the new environment.
+
+In general the two user data files are doing much the same thing, with a few slight
+differences. They are :
+
+. Setting up Ubuntu repositories
+. Installing a few supporting packages
+. Installing the Azul OpenJDK JVM
+. Installing ElasticSearch 5.6.6
+. Configuring and Starting ElasticSearch
+.. Gateway Node : Configured for no-data load-balancing only
+.. Data Node : Configured as HA clustered data storage nodes
+. Installing Kibana (gateway node only)
+. Configuring and Starting Kibana (gageway node only)
+
+This creates VMs with the requisite components installed, and ElasticSearch (and
+Kibana in the case of the gateway nodes) running on the nodes. Due to the fact that
+numerous packages are installed and configured during the startup of the VMs this
+process takes some time. Be patient. This deployment uses the "Zen" discovery
+mechanisms and all nodes should be joined into a single cluster after all processes
+are up and stable.
+
+== Configuration
+
+All configuration is handled with the *terraform.tfvars* file. Most of the values
+in the file can be left as-is, but a few are critical to adjust for the deployment
+environment. All values are documented in the file with comments, but some are
+critical enough that they deserve mention in this README. In no particular order
+those values are detailed here.
+
+*tag_vm_owner*:: This is an extra tag placed on the launched VMs to help identify
+them in a an environment where a large number of EC2 VMs are launched. Pick a name
+that is unique and easily remembered.
+*key_name*:: This is an SSH key which has been created in the target environment. It
+must already exist, and must be referenced appropriately or you will not have SSH
+access to your VMs.
+*gateway_ip_list*:: This is the list of _internal_ IP addresses to be statically assigned
+to the gateway nodes. The number of IPs defined in the list will  define the number
+of gateway nodes that are deployed. A minimum of two is the recommended number for an
+HA deployment.
+*server_ip_list*:: This is the list of internal IP addresses to be statically assigned
+to the data nodes deployed. A minimum of three data nodes are recommended for an HA
+deployment, though the example configures a total of five.
+
+== Deployment Steps
+
+. Insure that *Terraform 0.11.2* is installed
+. Untar the *elasticsearch-terraform.tgz* file in a convenient working directory
+. In the working directory issue the command *terraform init* to initialize the environment
+. Issue the command *terraform apply*, and at the point where Terraform requests
+whether to continue or not, answer *yes*.
+.. Terraform will generate copious output detailing all of the actions taken to
+deploy the cluster. This will consume quite a few minutes. Go get coffee or the
+beverage of your choice.
+. Note the "Cluster DNS" value as that is the external endpoint for the cluster.
+.. ex: *cloudbees-es-elb-1510964336.us-east-1.elb.amazonaws.com*
+. Confirm that the cluster is functioning with the *curl* command to port 9200
+.. ex: *curl cloudbees-es-elb-1510964336.us-east-1.elb.amazonaws.com:9200*
+. Similarly, the cluster can be removed by issuing a *terraform destroy*, and
+as with the *apply* command,
+a confirming *yes* is also required to complete the destroy opeartion.
+
+== In Closing
+
+It should be stressed that this is _not_ a production deployment example, and is
+to be used only as a starting point. This is also not intended to be a CloudBees
+supported deployment, but is only to be used as a POC or deployment example. These
+files are provided as-is with no warranty intended or implied. YYMV. Caveat Emptor.

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch17
+  labels:
+    component: elasticsearch17
+spec:
+  #type: LoadBalancer
+  selector:
+    component: elasticsearch17
+    com.cloudbees.cje.tenant: elasticsearch17
+  ports:
+  - name: http
+    port: 9200
+    protocol: TCP
+  - name: transport
+    port: 9300
+    protocol: TCP
