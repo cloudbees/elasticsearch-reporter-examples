@@ -39,7 +39,7 @@ spec:
         - name: CLUSTER_NAME
           value: estest
         - name:  SERVER_NAME
-          value: kibana.kube.pse.beescloud.com
+          value: kibana.cje.example.com
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
         resources:
@@ -71,7 +71,7 @@ spec:
   # To enable SSL offloading at ingress level, uncomment the following 5 lines
   #tls:
   #- hosts:
-  #  - kibana.kube.pse.beescloud.com
+  #  - kibana.cje.example.com
   #  # Name of the secret containing the certificate to be used
   #  secretName: cje-example-com-tls
   rules:
@@ -81,4 +81,4 @@ spec:
         backend:
           serviceName: kibana
           servicePort: 5601
-    host: kibana.kube.pse.beescloud.com
+    host: kibana.cje.example.com

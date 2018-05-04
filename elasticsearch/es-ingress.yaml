@@ -18,7 +18,7 @@ spec:
   # To enable SSL offloading at ingress level, uncomment the following 5 lines
   #tls:
   #- hosts:
-  #  - elasticsearch.kube.pse.beescloud.com
+  #  - elasticsearch.cje.example.com
   #  # Name of the secret containing the certificate to be used
   #  secretName: cje-example-com-tls
   rules:
@@ -28,4 +28,4 @@ spec:
         backend:
           serviceName: elasticsearch
           servicePort: 9200
-    host: elasticsearch.kube.pse.beescloud.com
+    host: elasticsearch.cje.example.com
